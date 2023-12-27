@@ -121,9 +121,9 @@ menu = 'Welcome to Connect Four\n1: Single Player\n2: Two Player\nX: Exit\n'
 user_input = user_input_()
 
 while user_input != "X":
-    board = create_board()       
+    board = create_board()      
+    win = False 
     if user_input == "2":
-        win = False
         while win ==  False:
             print_board(board)
 
@@ -138,4 +138,10 @@ while user_input != "X":
             win, winner = is_win(board)
         print(winner)
     
+    elif user_input == "1":
+        while win == False:
+            print_board(board)
+                
+
+
     user_input = user_input_()
