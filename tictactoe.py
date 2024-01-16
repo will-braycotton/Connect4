@@ -1,43 +1,5 @@
-class Game:
-    def __init__(self):
-        self.board  = ["_"] * 9
-    
-    
-    def move_piece(self, symbol,index):
-        if self.board[index] != "_":
-            return False
-        else:
-            self.board[index] = symbol
-            self.print_board()
-            return True
-def blank_space(board):
-        return board.count("_")
+import random
 
-def print_board(board):
-        print()
-        print(board.number, board.parent.number, board.depth)
-        for i in range(0,len(board.data),3):
-            print(board.data[i+0], board.data[i+1], board.data[i+2])
-        print()
-
-def is_win(board):
-        #column
-        for i in range(0,3):
-            if board[i] == board[i+3] == board[i+6] and board[i] !="_":
-                return True, board[i]
-        #row
-        for i in range(0, len(board),3):
-            if board[i+0] == board[i+1] == board[i+2] and board[i] !="_":
-                return True, board[i]
-        #diag 1 
-        if (board[0] == board[4] == board[8]) and board[0] != '_':
-            return True, board[0]
-        if (board[2] == board[4] == board[6]) and board[2] != '_' :
-            return True, board[2]
-        if blank_space(board) == 0:
-            return True, 0
-        
-        return False, 0
 class Newnode():
     count = 0
     def __init__(self):
@@ -46,12 +8,48 @@ class Newnode():
         self.parent = None
         self.depth = 0
         Newnode.count+=1
+        
+def move_piece(board, symbol,index):
+    if board.data[index] != "_":
+        return False
+    else:
+        board.data[index] = symbol
+        print_board(board)
+        return True
+    
+def blank_space(board):
+        return board.count("_")
+
+def print_board(board):
+        print()
+        for i in range(0,len(board.data),3):
+            print(board.data[i+0], board.data[i+1], board.data[i+2])
+        print()
+
+def is_win(board):
+        #column
+        for i in range(0,3):
+            if board.data[i] == board.data[i+3] == board.data[i+6] and board.data[i] !="_":
+                return True, board.data[i]
+        #row
+        for i in range(0, len(board.data),3):
+            if board.data[i+0] == board.data[i+1] == board.data[i+2] and board.data[i] !="_":
+                return True, board.data[i]
+        #diag 1 
+        if (board.data[0] == board.data[4] == board.data[8]) and board.data[0] != '_':
+            return True, board.data[0]
+        if (board.data[2] == board.data[4] == board.data[6]) and board.data[2] != '_' :
+            return True, board.data[2]
+        if blank_space(board.data) == 0:
+            return True, 0
+        
+        return False, 0
 
 def prompt_user(board, symbol,player):
     while True:
         try:
-            user_input=int(input(f'Player {player} select space 0-9: '))
-            if x.move_piece(symbol,user_input):
+            user_input=int(input(f'Player {player} select space 0-8: '))
+            if move_piece(board,symbol,user_input):
                 return True
             else:
                 print('Error space already occupied!')
@@ -76,10 +74,11 @@ def generate_board_combos(board_node,symbol,main_list, end_list):
             new_board.data[index]= symbol
             main_list.append(new_board)
             new_board.depth = node_depth(new_board)
-            value,x = is_win(new_board.data)
+            value,x = is_win(new_board)
             if '_' in new_board.data and not value:
                 symbol ='X' if symbol =='O' else 'O'
-                x = generate_board_combos(new_board,symbol,main_list,end_list)
+                generate_board_combos(new_board,symbol,main_list,end_list)
+                minimax
             else:
                 end_list.append(new_board)
                 
@@ -87,70 +86,140 @@ def generate_board_combos(board_node,symbol,main_list, end_list):
          
 def score(game_states,scores_list,symbol):
     for board in game_states:
-        state,symbol_2 = is_win(board.data)
+        state,symbol_2 = is_win(board)
         if state and symbol == symbol_2:
             scores_list.append(20 - board.depth) 
         elif state and symbol != symbol_2 and symbol_2 != 0:
             scores_list.append(-20 + board.depth)
         else:
             scores_list.append(0 + board.depth)
-    
 
+def parent(board):
+    while board.parent.parent != None:
+        board = board.parent
+    return board   
+
+def move_difference(board):
+    parent = board.parent.data
+    for index, value in enumerate(parent):
+        if board.data[index] != value:
+            return index
+        
 def minimax(board,symbol):
-    #generate all possible board combinations
-    '''If the game is over, return the score from X's perspective.
-    Otherwise get a list of new game states for every possible move
-    Create a scores list
-    For each of these states add the minimax result of that state to the scores list
-    If it's X's turn, return the maximum score from the scores list
-    If it's O's turn, return the minimum score from the scores list'''
-
     game_states = []
     end_list=[]
     generate_board_combos(board,symbol,game_states,end_list)
 
     scores_list =[]
     score(end_list,scores_list,symbol)
-
-    print(scores_list)
-    print(len(scores_list))
     
-    '''index  = scores_list.index(max(scores_list))
-    print(index)'''
+    index  = scores_list.index(max(scores_list))
+    best_node_move  = end_list[index]
+    
+    print(scores_list)
+    print(index)
+    print(best_node_move.data)
 
-    pass
+    move  = parent(best_node_move)
+    best_move  = move_difference(move)
+    return best_move
+
+def menu():
+    MENU = '\nWelcome to Tic-Tac-Toe!\nSelect a mode from below:\n\n1. User vs Random AI\n2. User vs Minimax AI\n3. Minimax AI vs Random AI\n4. Minimax AI vs Minimax AI \n5. Quit\n\nEnter your selection:'
+    user_input = input(MENU)
+    while not(user_input =='1' or user_input =='2' or user_input =='3' or user_input =='4' or user_input == '5'):
+        print('Enter Valid Menu Input')
+    return user_input
+
+def rand(board):
+    x= True
+    while x:
+        index = random.randint(0,8)
+        if board.data[index] == '_':
+            move_piece(board,'O', index)
+            return
 
 
+user_input = menu()
+while user_input != '5':
+    board = Newnode()
+    board.data = ["_"] * 9
+    print_board(board)
+
+    if user_input == '1':
+        w =True
+        while w:
+            prompt_user(board,'X','1')
+            state, symbol = is_win(board)
+            if not state:
+                rand(board)
+
+            state, symbol = is_win(board)
+
+            if state:
+                w = False
+                if symbol == 0:
+                    print('Its a tie!')
+                else:
+                    print(f'{symbol} Won!')
+
+    if user_input == '2':
+        w =True
+        while w:
+            prompt_user(board,'X','1')
+            state, symbol = is_win(board)
+            if not state:
+                move_piece(board,'O',minimax(board,'O'))
+
+            state, symbol = is_win(board)
+
+            if state:
+                w = False
+                if symbol == 0:
+                    print('Its a tie!')
+                else:
+                    print(f'{symbol} Won!')
+
+    if user_input == '3':
+        w =True
+        while w:
+            move_piece(board,'X',minimax(board,'X'))
+            state, symbol = is_win(board)
+            if not state:
+                rand(board)
+
+            state, symbol = is_win(board)
+
+            if state:
+                w = False
+                if symbol == 0:
+                    print('Its a tie!')
+                else:
+                    print(f'{symbol} Won!')
+
+    if user_input == '4':
+        w =True
+        while w:
+            move_piece(board,'X',minimax(board,'X'))
+            state, symbol = is_win(board)
+            if not state:
+                move_piece(board,'O',minimax(board,'O'))
+
+            state, symbol = is_win(board)
+
+            if state:
+                w = False
+                if symbol == 0:
+                    print('Its a tie!')
+                else:
+                    print(f'{symbol} Won!')
+
+    if not user_input =='5':
+        user_input= input('Would you like to play again? (y/n)')
+        if user_input == 'y':
+            user_input = menu()
+        else:
+            user_input = '5'
 
 
-board = Newnode()
-
-board.data = ['X','O','O','_','_','X','_','_','_']
-
-my_list = []
-end_list=[]
-generate_board_combos(board,'X',my_list,end_list)
-
-
-
-for node in end_list:
-    print_board(node)
-
-minimax(board,'X') 
-
-
-
-
-'''
-x = Game()
-x.print_board()
-w = True
-while w:
-    prompt_user(x,'X','1')
-    prompt_user(x,'O','2')
-
-    state, symbol = x.is_win()
-
-    if state:
-        w = False
-'''
+#need to account for the other player picking the best move as well
