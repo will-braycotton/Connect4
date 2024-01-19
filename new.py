@@ -82,8 +82,8 @@ def best_next_move(board):
 board = ['_','_','_','_','_','_','_','_','_']
 
 print_board(board)
-#print(minimax(board, 0))
-
+print(minimax(board, 0))
+print('hello')
 
 while not terminal(board)[0]:
     best_move  = minimax(board,0)[1]
@@ -96,3 +96,5 @@ while not terminal(board)[0]:
         print_board(board)
 
 print(terminal(board)[1])
+
+#test
